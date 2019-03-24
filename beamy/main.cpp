@@ -70,6 +70,11 @@ int main() {
 				dynamic_cast<Sphere*>(object)->radius = ob.value("radius", 1.0f);
 			} else if (type == "plane") {
 				object = new Plane();
+				Vector3 n(0.0f, 1.0f, 0.0f);
+				if (ob["normal"].is_array()) {
+					n = Vector3(ob["normal"][0], ob["normal"][1], ob["normal"][2]);
+				}
+				dynamic_cast<Plane*>(object)->norm = n;
 			} else if (type == "light") {
 				object = new Light();
 				dynamic_cast<Light*>(object)->intensity = ob.value("intensity", 1.0f);
@@ -121,7 +126,7 @@ int main() {
 	auto clk = BEGIN_BENCH;
 
 	// Render
-	//#pragma omp parallel for schedule(dynamic)
+	#pragma omp parallel for schedule(dynamic)
 	for (int k = 0; k < tiles.size(); k++) {
 		RenderTile rt = tiles[k];
 		for (int y = rt.y; y < rt.y + rt.height; y++) {
@@ -149,8 +154,8 @@ int main() {
 						Vector3 L = (light->position - ip);
 
 						// Cast shadow ray
-						//Ray sray(ip + in * consts::Epsilon, L.normalized());
-						//if (scene.intersects(sray, t, nullptr)) continue;
+						Ray sray(ip + in * consts::Epsilon, L.normalized());
+						if (scene.intersects(sray, t, nullptr)) continue;
 						//
 
 						float dist = L.length();
@@ -160,7 +165,7 @@ int main() {
 						lighting += light->color * (nl * l->intensity / dist * dist);
 					}
 
-					color = hit->color * lighting;
+					color = lighting; // in * 0.5f + Vector3(0.5f);
 				}
 
 				int r = std::clamp(int(color.x * 255.0f), 0, 255);
@@ -177,6 +182,5 @@ int main() {
 	
 	stbi_write_png("out.png", scene.width(), scene.height(), 3, pixels.data(), 0);
 
-	std::cin.get();
 	return 0;
 }

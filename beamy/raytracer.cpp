@@ -4,7 +4,7 @@
 #include <algorithm>
 
 bool Sphere::intersects(const Ray& ray, float& t) {
-	Vector3 oc = position - ray.origin;
+	Vector3 oc = ray.origin - position;
 	float a = ray.direction.dot(ray.direction);
 	float b = 2.0f * oc.dot(ray.direction);
 	float c = oc.dot(oc) - radius * radius;
@@ -83,11 +83,10 @@ Vector3 Ray::at(float t) const {
 }
 
 bool Plane::intersects(const Ray& ray, float& t) {
-	Vector3 N = normal(ray, t);
-	float denom = N.dot(ray.direction);
+	float denom = norm.dot(ray.direction);
 	if (denom > consts::Epsilon) {
 		Vector3 p0l0 = position - ray.origin;
-		t = p0l0.dot(N) / denom;
+		t = p0l0.dot(norm) / denom;
 		if (t >= 0.0f) {
 			return true;
 		}
@@ -97,5 +96,5 @@ bool Plane::intersects(const Ray& ray, float& t) {
 }
 
 Vector3 Plane::normal(const Ray& ray, float t) {
-	return rotation.rotate(Vector3(0, -1, 0));
+	return norm.normalized() * -1;
 }

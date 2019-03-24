@@ -65,6 +65,8 @@ struct Plane : public Object {
 	
 	bool intersects(const Ray& ray, float& t) override;
 	Vector3 normal(const Ray& ray, float t) override;
+
+	Vector3 norm;
 };
 
 struct Light : public Object {
